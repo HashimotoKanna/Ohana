@@ -1,35 +1,37 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
 import asyncio
-from aiosqlite import connect
-import ast
-import contextlib
-import io
 import os
-import textwrap
-import traceback
+import json
 
-token = "Njg0MDc0MzMxMDM4NTQ4MDU0.GQL-Tn.WFEv6tAB1cCZ9MS7YcwPPL_1vk9kEdczsae6Ic"
-prefix = "ww"
+
+with open(r'./assets/config/setting.json', encoding='utf-8') as fh:
+    json_txt = fh.read()
+    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+    token = json.loads(json_txt)['token']
+    prefix = json.loads(json_txt)['prefix']
+
+with open(r'./assets/config/items.json', encoding='utf-8') as fh:
+    json_txt = fh.read()
+    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+    item_list = json.loads(json_txt)['items']
+
 intents = discord.Intents.all()
 only_admin = []
 admin_list = [605188331642421272]
 sqlite_list = []
-# 下のやつをpathだと思って使ったらエラー出たわ
-DB_PATH = os.environ.get('C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/cogs/assets/db/mine.db')
 
 
 class MyBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(command_prefix=prefix, intents=intents)
         self.sqlite_list = kwargs.pop("sqlite_list")
-
+        self.item_list = kwargs.pop("item_list")
     def remove_from_list(self, u_id):
         [self.sqlite_list.remove(m) for m in self.sqlite_list if u_id == m[0]]
 
 
-bot = MyBot(sqlite_list=sqlite_list)
+bot = MyBot(sqlite_list=sqlite_list, item_list=item_list)
 
 
 @bot.event
@@ -52,9 +54,9 @@ async def on_command_error(ctx, err):
 
 
 async def load_cogs():
-    for file in os.listdir('./cogs'):
+    for file in os.listdir('assets/cogs/'):
         if file.endswith('.py'):
-            await bot.load_extension(f'cogs.{file[:-3]}')
+            await bot.load_extension(f'assets.cogs.{file[:-3]}')
 
 
 asyncio.run(load_cogs())

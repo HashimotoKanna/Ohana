@@ -1,17 +1,31 @@
 import discord
 from discord.ext import commands
 import asyncio
-import os
 import json
+import os
 
+path_list = ['assets/db', 'assets/img', 'assets/config', 'assets/item', 'assets/monster']
+paths = {}
 
-with open(r'./assets/config/setting.json', encoding='utf-8') as fh:
+def get_paths(path):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    dir = os.path.join(script_dir, path)
+    image_paths = {}
+    for filename in os.listdir(dir):
+        name, ext = os.path.splitext(filename)
+        image_paths[name] = os.path.join(dir, filename)
+    return image_paths
+
+for i in path_list:
+    paths[os.path.basename(i)] = get_paths(i)
+
+with open(paths["config"]["setting"], encoding='utf-8') as fh:
     json_txt = fh.read()
     json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
     token = json.loads(json_txt)['token']
     prefix = json.loads(json_txt)['prefix']
 
-with open(r'./assets/config/items.json', encoding='utf-8') as fh:
+with open(paths["item"]["items"], encoding='utf-8') as fh:
     json_txt = fh.read()
     json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
     item_list = json.loads(json_txt)['items']
@@ -27,11 +41,12 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix=prefix, intents=intents)
         self.sqlite_list = kwargs.pop("sqlite_list")
         self.item_list = kwargs.pop("item_list")
+        self.paths = kwargs.pop("paths")
     def remove_from_list(self, u_id):
         [self.sqlite_list.remove(m) for m in self.sqlite_list if u_id == m[0]]
 
 
-bot = MyBot(sqlite_list=sqlite_list, item_list=item_list)
+bot = MyBot(sqlite_list=sqlite_list, item_list=item_list, paths=paths)
 
 
 @bot.event

@@ -18,6 +18,7 @@ class test(commands.Cog):
         self.bot = bot
         self._last_result = None
 
+
     def cog_unload(self):
         self.conn.close()
 
@@ -35,14 +36,18 @@ class test(commands.Cog):
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def mine(self, ctx):
         try:
+            Mine = database.Mine(ctx=ctx)
             user_id = ctx.author.id
+            fname = "playing_front.png"
+
             async with connect(DB_PATH) as conn:
                 async with conn.cursor() as cur:
-                    depth = await database.player_mine(user_id, 0, 1, conn, cur)
-                  #  text = "この場所は既に掘られています" if not depth else f"一マス掘りました！\n\n現在深度{depth[1]}"
-                    fname = "playing_front.gif"
-                    embed = discord.Embed(description=f"一マス掘りました！\n\n現在深度{depth[1]}")
-                    file = discord.File(fp=IMG_PATH + "/" + "playing_front.gif", spoiler=False)  # ローカル画像からFileオブジェクトを作成
+                    depth, mine_text, layer = await Mine.player_mine(user_id, 0, 1, conn, cur)
+                    depth = (layer-1) * 20 + depth[1]
+                    text = f"{mine_text}\n\n現在深度{depth}"
+
+                    embed = discord.Embed(description=text)
+                    file = discord.File(fp=IMG_PATH + "/" + fname, spoiler=False)
                     embed.set_image(url=f"attachment://{fname}")
                     view = button.Confirm()
                     await ctx.send(file=file, embed=embed, view=view)

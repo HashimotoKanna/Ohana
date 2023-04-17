@@ -13,11 +13,11 @@ async def create_database():
     async with connect(DB_PATH) as conn:
         async with conn.cursor() as cur:
             await conn.commit()
-            # テーブル名:『player』カラム名: ユーザーID 整数値, exp 整数値
-            await cur.execute("CREATE TABLE IF NOT EXISTS player(user_id BIGINT(20), exp INT)")
+            # テーブル名:『player』カラム名: ユーザーID 整数値, exp 整数値, 堀った数 整数値
+            await cur.execute("CREATE TABLE IF NOT EXISTS player(user_id BIGINT(20), exp INT, mine_count INT)")
             await conn.commit()
 
-            # テーブル名:『position』カラム名: ユーザーID 整数値, x 整数値, y 整数値, 階層 整数値
+            # テーブル名:『position』カラム名: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
             await cur.execute("CREATE TABLE IF NOT EXISTS position(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()
 
@@ -29,8 +29,8 @@ async def create_database():
             await cur.execute("CREATE TABLE IF NOT EXISTS ban_user(user_id BIGINT(20))")
             await conn.commit()
 
-            # テーブル名:『mine』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, 堀った数 整数値
-            await cur.execute("CREATE TABLE IF NOT EXISTS mine(user_id BIGINT(20), x INT, y INT, count INT)")
+            # テーブル名:『mine』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+            await cur.execute("CREATE TABLE IF NOT EXISTS mine(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()
 
 

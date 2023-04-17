@@ -62,13 +62,15 @@ class Mine:
             none_img = none_img.resize((i_x, i_y))
             x_pos = 0
             y_pos = 0
-            for x, y in mine_pos:
-                x_pos = x * 40 + 500  # 真ん中なので1000の2割った500からスタート
-                y_pos = y * 40
-                background_img.paste(none_img, (x_pos, y_pos))
+            if mine_pos:
+                for x, y in mine_pos:
+                    x_pos = 500 + x * 40  # 真ん中なので1000の2割った500からスタート
+                    y_pos = y * 40
+                    background_img.paste(none_img, (x_pos, y_pos))
             background_img.save(BG_TMP_PATH, quality=95)
-
-            self.create_animation("front", x_pos, y_pos)
+            x = pos[0] * 40 + 500
+            y = pos[1] * 40
+            self.create_animation("front", x, y)
 
         except:
             print("エラー情報\n" + traceback.format_exc())
@@ -97,9 +99,10 @@ class Mine:
 
 
 def is_change_layer(y, m_y, layer):
-    if y + m_y >= 20:
+    judge = y + m_y > 19 if layer == 1 else y + m_y > 20
+    if judge:
         layer += 1
-        y %= 20
+        y %= 19
     elif y + m_y < 0:
         y = 20
         layer -= 1

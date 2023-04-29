@@ -45,12 +45,12 @@ class Mine:
         except:
             print("エラー情報\n" + traceback.format_exc())
 
-    def create_animation(self, direction, x, y):
+    def paste_icon(self, x, y):
         background_img = Image.open(BG_TMP_PATH)
         img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
         img = img.resize((40, 40))
         background_img.paste(img, (x, y))
-        background_img.save(f'{IMG_PATH}' + f'/playing_{direction}.png', quality=95)
+        background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
 
     async def make_terrain(self, pos, mines, layer):
         try:
@@ -58,8 +58,6 @@ class Mine:
             for m_x, m_y in mines:
                 mine_pos.append((m_x, m_y))
             none_img = Image.open(NONE_PATH)
-            img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
-            img = img.resize((40, 40))
             t_img = Image.open(TREASUREBOX_PATH)
             t_img = t_img.resize((40, 40))
             background_img = change_background(layer)
@@ -81,9 +79,7 @@ class Mine:
 
             x = pos[0] * 40 + 500
             y = pos[1] * 40
-         #   self.create_animation("front", x, y)
-            background_img.paste(img, (x, y))
-            background_img.save(f'{IMG_PATH}' + f'/playing_front.png', quality=95)
+            self.create_animation(x, y)
 
         except:
             print("エラー情報\n" + traceback.format_exc())

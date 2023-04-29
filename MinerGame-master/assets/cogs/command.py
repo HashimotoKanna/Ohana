@@ -34,7 +34,7 @@ class test(commands.Cog):
 
     @commands.command(name='mine')
     @commands.cooldown(1, 8, type=commands.BucketType.user)
-    async def mine(self, ctx):
+    async def mine(self, ctx, direct=None):
         try:
             Mine = database.Mine(ctx=ctx)
             user_id = ctx.author.id

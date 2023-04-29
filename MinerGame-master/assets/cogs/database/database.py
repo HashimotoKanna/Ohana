@@ -2,6 +2,7 @@ import traceback
 from PIL import Image
 import io
 import requests
+import random
 
 IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
 DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db"
@@ -9,6 +10,7 @@ BG_0_PATH = f'{IMG_PATH}/background_0.png'
 BG_1_PATH = f'{IMG_PATH}/background_1.png'
 NONE_PATH = f'{IMG_PATH}/none.png'
 BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
+TREASUREBOX_PATH = f'{IMG_PATH}/treasure_box.png'
 
 
 class Mine:
@@ -16,6 +18,7 @@ class Mine:
         self.ctx = ctx
         self.interaction = interaction
         self.user_id = self.ctx.author.id if self.ctx else self.interaction.user.id if self.interaction else None
+        self.user = self.ctx.author if self.ctx else self.interaction.user if self.interaction else None
 
     async def player_mine(self, user_id: int, m_x: int, m_y: int, conn, cur):
         try:
@@ -44,7 +47,7 @@ class Mine:
 
     def create_animation(self, direction, x, y):
         background_img = Image.open(BG_TMP_PATH)
-        img = Image.open(io.BytesIO(requests.get(self.ctx.author.display_avatar).content))
+        img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
         img = img.resize((40, 40))
         background_img.paste(img, (x, y))
         background_img.save(f'{IMG_PATH}' + f'/playing_{direction}.png', quality=95)
@@ -55,22 +58,32 @@ class Mine:
             for m_x, m_y in mines:
                 mine_pos.append((m_x, m_y))
             none_img = Image.open(NONE_PATH)
+            img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
+            img = img.resize((40, 40))
+            t_img = Image.open(TREASUREBOX_PATH)
+            t_img = t_img.resize((40, 40))
+            background_img = change_background(layer)
 
-            background_img = Image.open(BG_0_PATH) if layer == 1 else Image.open(BG_1_PATH)
             i_x = none_img.width - 8
             i_y = none_img.height - 8
             none_img = none_img.resize((i_x, i_y))
-            x_pos = 0
-            y_pos = 0
             if mine_pos:
                 for x, y in mine_pos:
                     x_pos = 500 + x * 40  # 真ん中なので1000の2割った500からスタート
                     y_pos = y * 40
                     background_img.paste(none_img, (x_pos, y_pos))
-            background_img.save(BG_TMP_PATH, quality=95)
+
+            treasure_pos = generate_treasure_point()
+            for t_pos in treasure_pos:
+                t_pos[0] *= 40
+                t_pos[1] *= 40
+                background_img.paste(t_img, t_pos)
+
             x = pos[0] * 40 + 500
             y = pos[1] * 40
-            self.create_animation("front", x, y)
+         #   self.create_animation("front", x, y)
+            background_img.paste(img, (x, y))
+            background_img.save(f'{IMG_PATH}' + f'/playing_front.png', quality=95)
 
         except:
             print("エラー情報\n" + traceback.format_exc())
@@ -109,3 +122,24 @@ def is_change_layer(y, m_y, layer):
     else:
         y += m_y
     return y, layer
+
+
+def change_background(layer):
+    if layer == 1:
+        background_img = Image.open(BG_0_PATH)
+    else:
+        background_img = Image.open(BG_1_PATH)
+    return background_img
+
+
+def generate_treasure_point():
+    x = 25
+    y = 20
+    pos_list = []
+    tmp = []
+    for i in range(x):
+        for j in range(y):
+            tmp.append([i, j])
+    for _ in range(8):
+        pos_list.append(random.choice(tmp))
+    return pos_list

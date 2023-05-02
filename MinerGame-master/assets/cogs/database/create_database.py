@@ -33,5 +33,8 @@ async def create_database():
             await cur.execute("CREATE TABLE IF NOT EXISTS mine(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()
 
+            # テーブル名:『treasure』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+            await cur.execute("CREATE TABLE IF NOT EXISTS treasure(user_id BIGINT(20), x INT, y INT, layer INT)")
+            await conn.commit()
 
 asyncio.run(create_database())

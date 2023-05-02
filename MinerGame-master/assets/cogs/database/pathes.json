@@ -1,0 +1,9 @@
+{
+  "BG_0_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img/background_0.png",
+  "BG_1_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img/background_1.png",
+  "BG_TMP_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img/background_tmp.png",
+  "DB_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db",
+  "IMG_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img",
+  "NONE_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img/none.png",
+  "TREASURE_BOX_PATH": "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img/treasure_box.png"
+}

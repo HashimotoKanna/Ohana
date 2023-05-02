@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from colorama import Fore
 from aiosqlite import connect
-from .database import button, database
+from .database import button, database, warp, player
 import traceback
 
 IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
@@ -38,7 +38,7 @@ class test(commands.Cog):
         try:
             Mine = database.Mine(ctx=ctx)
             user_id = ctx.author.id
-            fname = "playing_front.png"
+            fname = f"playing_front.png"
 
             async with connect(DB_PATH) as conn:
                 async with conn.cursor() as cur:
@@ -54,6 +54,14 @@ class test(commands.Cog):
         except:
             return print("エラー情報\n" + traceback.format_exc())
 
+    @commands.command(name='teleport', alias=["w", "wp", "tp"])
+    @commands.cooldown(1, 8, type=commands.BucketType.user)
+    async def teleport(self, ctx):
+        try:
+            pass
+
+        except:
+            return print("エラー情報\n" + traceback.format_exc())
     @commands.command(name='inventory', alias=["inv", "i"])
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def inventory(self, ctx):

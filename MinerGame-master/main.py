@@ -42,6 +42,7 @@ class MyBot(commands.Bot):
         self.sqlite_list = kwargs.pop("sqlite_list")
         self.item_list = kwargs.pop("item_list")
         self.paths = kwargs.pop("paths")
+
     def remove_from_list(self, u_id):
         [self.sqlite_list.remove(m) for m in self.sqlite_list if u_id == m[0]]
 

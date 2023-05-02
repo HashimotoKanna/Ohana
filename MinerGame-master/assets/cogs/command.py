@@ -2,8 +2,9 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from colorama import Fore
+import asyncio
 from aiosqlite import connect
-from .database import button, database, warp, player
+from .database import button, database
 import traceback
 
 IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
@@ -11,13 +12,13 @@ DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/asse
 BG_PATH = f'{IMG_PATH}/background.png'
 NONE_PATH = f'{IMG_PATH}/none.png'
 BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
-
+admin_list = [605188331642421272]
 
 class test(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
-
+        self.admin_list=admin_list
 
     def cog_unload(self):
         self.conn.close()
@@ -43,7 +44,7 @@ class test(commands.Cog):
             async with connect(DB_PATH) as conn:
                 async with conn.cursor() as cur:
                     depth, mine_text, layer = await Mine.player_mine(user_id, 0, 1, conn, cur)
-                    depth = (layer-1) * 20 + depth[1]
+                    depth = (layer - 1) * 20 + depth[1]
                     text = f"{mine_text}\n\n現在深度{depth}"
 
                     embed = discord.Embed(description=text)
@@ -54,14 +55,40 @@ class test(commands.Cog):
         except:
             return print("エラー情報\n" + traceback.format_exc())
 
-    @commands.command(name='teleport', alias=["w", "wp", "tp"])
+    @commands.command(name='tp')
     @commands.cooldown(1, 8, type=commands.BucketType.user)
-    async def teleport(self, ctx):
+    async def teleport(self, ctx, x=None, y=None, layer=None):
         try:
-            pass
+            user_id = ctx.author.id
+            async with connect(DB_PATH) as conn:
+                async with conn.cursor() as cur:
+                    player = database.Player(ctx=ctx)
+                    warp_points = await player.get_player_warp_point(cur)
+                    text = f"テレポートしたい場所を選択してください\n"
+                    contents = []
+                    pos_list = "".join(f"x:{pos[0]}, y:{pos[1]}, 階層:{pos[2]}\n" for pos in warp_points)
+                    msgs = list(filter(lambda a: a != "", ["\n".join(pos_list.split("\n")[i:i + 25]) for i in
+                                                           range(0, len(pos_list), 25)]))
+                    embeds = [discord.Embed(description=f"```{i if i else 'どこも掘っていません...'}```").set_author(name=f"{ctx.author}のテレポート先:") for i in msgs]
+                    msg = await ctx.send(
+                        content=f"```diff\n1ページ/{len(embeds)}ページ目を表示中\nテレポートしたい場所を選択してください\n30秒経ったら処理は止まります。\n0と発言したら強制的に処理は止まります。```",
+                        embed=embeds[0])
+                    while True:
+                        try:
+                            msg_react = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.content.isdigit() and 0 <= int(m.content) <= len(embeds), timeout=30)
+                            if msg_react.content == "0":
+                                # このcontentの中にはゼロ幅スペースが入っています。Noneでもいいのですが編集者はこっちの方が分かりやすいからこうしています。
+                                return await msg.edit(content="‌")
+                            await msg.edit(content=f"```diff\n{int(msg_react.content)}ページ/{len(embeds)}ページ目を表示中\n見たいページを発言してください。\n30秒経ったら処理は止まります。\n0と発言したら強制的に処理は止まります。```", embed=embeds[int(msg_react.content)-1])
+                        except asyncio.TimeoutError:
+                            return await msg.edit(content="‌", embed=discord.Embed(title=f"時間切れです..."))
+
+
+
 
         except:
             return print("エラー情報\n" + traceback.format_exc())
+
     @commands.command(name='inventory', alias=["inv", "i"])
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def inventory(self, ctx):
@@ -91,13 +118,6 @@ async def get_player_items(self, user_id, conn, cur):
 
     except:
         print("エラー情報\n" + traceback.format_exc())
-
-
-
-
-
-
-
 
 
 async def setup(bot: commands.Bot):

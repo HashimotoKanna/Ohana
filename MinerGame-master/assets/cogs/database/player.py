@@ -16,13 +16,19 @@ class Player:
             return 0, 0, 1
         return player
 
-    async def get_player_mine(self, layer, cur):
+    async def get_player_mine(self, cur, layer=None):
         if layer:
             await cur.execute("SELECT x, y FROM mine WHERE user_id=? AND layer=?", (self.user_id, layer))
             player = await cur.fetchall()
             return player
+
         else:
-            await cur.execute("SELECT x, y FROM mine WHERE user_id=?", self.user_id)
+            await cur.execute("SELECT x, y, layer FROM mine WHERE user_id=?", (self.user_id,))
             player = await cur.fetchall()
             return player
+
+    async def get_player_warp_point(self, cur):
+        await cur.execute("SELECT x, y, layer FROM mine WHERE user_id=?", (self.user_id,))
+        player = await cur.fetchall()
+        return player
 

@@ -31,7 +31,7 @@ class Mine(Player):
 
             y, layer = is_change_layer(y, m_y, layer)
 
-            mines = await self.get_player_mine(layer, cur)
+            mines = await self.get_player_mine(cur, layer)
             await self.make_terrain((x, y), mines, layer)
 
             if not (x, y) in mines:

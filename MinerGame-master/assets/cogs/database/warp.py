@@ -14,7 +14,7 @@ BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
 TREASUREBOX_PATH = f'{IMG_PATH}/treasure_box.png'
 
 
-class Warp(Player):
+class Warp:
     def __init__(self, ctx=None, interaction=None):
         super().__init__(ctx, interaction)
 

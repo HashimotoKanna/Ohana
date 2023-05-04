@@ -17,10 +17,10 @@ class Confirm(discord.ui.View):
     async def embed_response(self, interaction, x, y):
         user_id = interaction.user.id
         Mine = database.Mine(interaction=interaction)
-        fname = f"playing_front.png"
+        fname = f"playing_{user_id}.png"
         async with connect(DB_PATH) as conn:
             async with conn.cursor() as cur:
-                depth, mine_text, layer = await Mine.player_mine(user_id, x, y, conn, cur)
+                depth, mine_text, layer = await Mine.player_mine(x, y,conn, cur)
                 depth = (layer - 1) * 20 + depth[1]
                 text = f"{mine_text}\n\n現在深度{depth}"
 

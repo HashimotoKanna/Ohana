@@ -5,6 +5,17 @@ class Player:
         self.user_id = self.ctx.author.id if self.ctx else self.interaction.user.id if self.interaction else None
         self.user = self.ctx.author if self.ctx else self.interaction.user if self.interaction else None
 
+    async def move(self, x, y, layer, cur, conn, mines=None):
+        is_mine = "移動しました！"
+        if mines and not (x, y) in mines:
+            await cur.execute("INSERT INTO mine values(?,?,?,?)", (self.user_id, x, y, layer))
+            await conn.commit()
+            is_mine = "掘りました！"
+
+        await cur.execute("UPDATE position SET x=?, y=?, layer=? WHERE user_id=?", (x, y, layer, self.user_id))
+        await conn.commit()
+        return is_mine
+
     async def get_player_position(self, conn, cur):
         await cur.execute("SELECT x, y, layer FROM position WHERE user_id=?", (self.user_id,))
         player = await cur.fetchone()

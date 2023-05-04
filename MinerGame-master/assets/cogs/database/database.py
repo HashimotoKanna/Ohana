@@ -1,4 +1,3 @@
-import traceback
 from PIL import Image
 import io
 import requests
@@ -20,30 +19,20 @@ class Mine(Player):
         self.none_img = Image.open(NONE_PATH)
         self.treasure_box_img = Image.open(TREASUREBOX_PATH)
 
-    async def player_mine(self, user_id: int, m_x: int, m_y: int, conn, cur):
-        try:
-            is_mine = "一マス移動しました！"
-            x, y, layer = await self.get_player_position(conn, cur)
+    async def player_mine(self, m_x: int, m_y: int, conn, cur):
+        x, y, layer = await self.get_player_position(conn, cur)
 
-            if m_x + x >= 20:
-                return (x, y), "横にはこれ以上掘れないよ！", layer
-            x += m_x
+        if m_x + x >= 20:
+            return (x, y), "横にはこれ以上掘れないよ！", layer
+        x += m_x
 
-            y, layer = is_change_layer(y, m_y, layer)
+        y, layer = is_change_layer(y, m_y, layer)
 
-            mines = await self.get_player_mine(cur, layer)
-            await self.make_terrain((x, y), mines, layer)
+        mines = await self.get_player_mine(cur, layer)
+        await self.make_terrain((x, y), mines, layer)
 
-            if not (x, y) in mines:
-                await cur.execute("INSERT INTO mine values(?,?,?,?)", (user_id, x, y, layer))
-                await conn.commit()
-                is_mine = "一マス掘りました！"
-
-            await cur.execute("UPDATE position SET x=?, y=?, layer=? WHERE user_id=?", (x, y, layer, user_id))
-            await conn.commit()
-            return (x, y), is_mine, layer
-        except:
-            print("エラー情報\n" + traceback.format_exc())
+        is_mine = f"{abs(m_y if m_y != 0 else m_x)}つ" + await self.move(x, y, layer, cur, conn, mines)  # 斜め移動をする場合ここ絶対エラー出る
+        return (x, y), is_mine, layer
 
     def paste_icon(self, x, y):
         background_img = Image.open(BG_TMP_PATH)
@@ -53,37 +42,33 @@ class Mine(Player):
         background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
 
     async def make_terrain(self, pos, mines, layer):
-        try:
-            mine_pos = []
-            for m_x, m_y in mines:
-                mine_pos.append((m_x, m_y))
-            none_img = Image.open(NONE_PATH)
-            img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
-            img = img.resize((34, 34))
-            t_img = Image.open(TREASUREBOX_PATH)
-            t_img = t_img.resize((40, 40))
-            background_img = change_background(layer)
+        mine_pos = []
+        for m_x, m_y in mines:
+            mine_pos.append((m_x, m_y))
+        none_img = Image.open(NONE_PATH)
+        img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content))
+        img = img.resize((34, 34))
+        t_img = Image.open(TREASUREBOX_PATH)
+        t_img = t_img.resize((40, 40))
+        background_img = change_background(layer)
 
-            if mine_pos:
-                for x, y in mine_pos:
-                    x_pos = 480 + x * 40
-                    y_pos = y * 40
-                    background_img.paste(none_img, (x_pos, y_pos))
+        if mine_pos:
+            for x, y in mine_pos:
+                x_pos = 480 + x * 40
+                y_pos = y * 40
+                background_img.paste(none_img, (x_pos, y_pos))
 
-            treasure_pos = generate_treasure_point()
-            for t_pos in treasure_pos:
-                x = int(t_pos[0] * 40)
-                y = int(t_pos[1] * 40)
-                background_img.paste(t_img, (x, y))
+        treasure_pos = generate_treasure_point()
+        for t_pos in treasure_pos:
+            x = int(t_pos[0] * 40)
+            y = int(t_pos[1] * 40)
+            background_img.paste(t_img, (x, y))
 
-            x = pos[0] * 40 + 480 + 3
-            y = pos[1] * 40 + 3
-            #   self.create_animation("front", x, y)
-            background_img.paste(img, (x, y))
-            background_img.save(f'{IMG_PATH}' + f'/playing_front.png', quality=95)
-
-        except:
-            print("エラー情報\n" + traceback.format_exc())
+        x = pos[0] * 40 + 480 + 3
+        y = pos[1] * 40 + 3
+        #   self.create_animation("front", x, y)
+        background_img.paste(img, (x, y))
+        background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
 
 
 def is_change_layer(y, m_y, layer):

@@ -17,7 +17,7 @@ admin_list = [
 ]
 
 
-class test(commands.Cog):
+class command(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
@@ -141,4 +141,4 @@ async def get_player_items(self, user_id, conn, cur):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(test(bot))
+    await bot.add_cog(command(bot))

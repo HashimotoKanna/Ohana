@@ -2,12 +2,12 @@ class Player:
     def __init__(self, ctx=None, interaction=None):
         self.ctx = ctx
         self.interaction = interaction
-        self.user_id = self.ctx.author.id if self.ctx else self.interaction.user.id if self.interaction else None
-        self.user = self.ctx.author if self.ctx else self.interaction.user if self.interaction else None
+        self.user = self.ctx.author if self.ctx else self.interaction.user
+        self.user_id = self.user.id
 
     async def move(self, x, y, layer, cur, conn, mines=None):
         is_mine = "移動しました！"
-        if mines and not (x, y) in mines:
+        if not (x, y, layer) in mines:
             await cur.execute("INSERT INTO mine values(?,?,?,?)", (self.user_id, x, y, layer))
             await conn.commit()
             is_mine = "掘りました！"

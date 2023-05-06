@@ -40,4 +40,8 @@ async def create_database():
             # テーブル名:『warp_point』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
             await cur.execute("CREATE TABLE IF NOT EXISTS warp_point(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()
+
+            # テーブル名:『shop』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+            await cur.execute("CREATE TABLE IF NOT EXISTS shop(user_id BIGINT(20), x INT, y INT, layer INT)")
+            await conn.commit()
 asyncio.run(create_database())

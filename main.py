@@ -7,6 +7,7 @@ import os
 path_list = ['assets/db', 'assets/img', 'assets/config', 'assets/item', 'assets/monster']
 paths = {}
 
+
 def get_paths(path):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     dir = os.path.join(script_dir, path)
@@ -15,6 +16,7 @@ def get_paths(path):
         name, ext = os.path.splitext(filename)
         image_paths[name] = os.path.join(dir, filename)
     return image_paths
+
 
 for i in path_list:
     paths[os.path.basename(i)] = get_paths(i)

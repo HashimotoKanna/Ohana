@@ -4,6 +4,7 @@ import requests
 import random
 from .player import Player
 from .treasure import Treasure
+from .shop import Shop
 from .ImageGenerator import ImageGenerator
 
 IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
@@ -22,8 +23,12 @@ class Mine(Player):
         self.treasure_box_img = Image.open(TREASUREBOX_PATH)
 
     async def player_mine(self, m_x: int, m_y: int, conn, cur):
-        x, y, layer = await self.get_player_position(conn, cur)
+        treasure = Treasure(ctx=self.ctx, interaction=self.interaction)
+        shop = Shop(ctx=self.ctx, interaction=self.interaction)
 
+        x, y, layer = await self.get_player_position(conn, cur)
+        treasure_pos = await treasure.get_treasure_point(layer)
+        shop_pos = await shop.get_shop_point(layer)
         terrain = ImageGenerator(ctx=self.ctx, interaction=self.interaction)
         if m_x + x >= 20:
             return (x, y), "横にはこれ以上掘れないよ！", layer

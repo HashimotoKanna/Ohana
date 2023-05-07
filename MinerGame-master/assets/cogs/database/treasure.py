@@ -21,7 +21,7 @@ class Treasure:
                     for i in self.generate_treasure_points():
                         await cur.execute("INSERT INTO treasure values(?,?,?,?)", (self.user_id, i[0], i[1], layer))
                         await conn.commit()
-                        treasure_points.append((i[0], i[1], layer))
+                        treasure_points.append((i[0], i[1]))
                 return treasure_points
 
     def generate_treasure_points(self) -> list:

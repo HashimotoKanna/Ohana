@@ -4,7 +4,10 @@ from discord import app_commands
 from colorama import Fore
 import asyncio
 from aiosqlite import connect
-from .database import button, database
+from .database import button, mine
+from .database.mine import Mine
+from .database.player import Player
+from .database.ImageGenerator import ImageGenerator
 import traceback
 
 IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
@@ -39,7 +42,7 @@ class command(commands.Cog):
     @commands.command(name='mine')
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def mine(self, ctx, direct=None):
-        Mine = database.Mine(ctx=ctx)
+        Mine = mine.Mine(ctx=ctx)
         user_id = ctx.author.id
         fname = f"playing_{user_id}.png"
 
@@ -63,13 +66,14 @@ class command(commands.Cog):
         fname = f"playing_{user_id}.png"
         async with connect(DB_PATH) as conn:
             async with conn.cursor() as cur:
-                player = database.Player(ctx=ctx)
-                mine = database.Mine(ctx=ctx)
+                player = Player(ctx=ctx)
+                mine = Mine(ctx=ctx)
+                img = ImageGenerator(ctx=ctx)
                 warp_points = await player.get_player_warp_point(cur)
                 if x and y and layer and (int(x), int(y), int(layer)) in warp_points:
                     x, y, layer = int(x), int(y), int(layer)
                     mines = await mine.get_player_mine(cur, layer)
-                    await mine.make_terrain((x, y), mines, layer)
+                    await img.make_terrain((x, y), mines, layer)
                     text = f"ここにテレポートしますか？\n" + f"x:{x}, y:{y}, 階層:{layer}\n"
                     embed = discord.Embed(description=text)
                     file = discord.File(fp=IMG_PATH + "/" + fname, spoiler=False)

@@ -9,6 +9,7 @@ import traceback
 import ast
 import textwrap
 import os
+from .database import serverinfo
 import contextlib
 from discord import NotFound, Embed, Forbidden
 
@@ -209,7 +210,11 @@ class admin(commands.Cog):
                 else:
                     return await msg.edit(embed=Embed(
                         description=f"ERROR...これは出力できません。\n設定されている基本命令文は下のやつだけです。\n[SELECT, DELETE, INSERT, UPDATE, SHOW]"))
-
+    @commands.command(name='sinfo', pass_context=True, description="※運営専用コマンド")
+    async def server_info(self, ctx):
+       date, temp, clock, volts, memory_cpu, memory_gpu = serverinfo.server_info()
+       await ctx.send("```py\n{}, \ntemp:{}, \nclock:{}, \nvolts:{}, \ncpu_m:{}, \ngpu_m:{}\n```".format(date, temp, clock, volts, memory_cpu, memory_gpu))
+        
 
 async def is_safe(code: str) -> bool:
     """

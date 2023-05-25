@@ -2,19 +2,38 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from colorama import Fore
+import pprint
+import csv
 import asyncio
+import random
 from aiosqlite import connect
 from .database import button, mine
 from .database.mine import Mine
 from .database.player import Player
 from .database.ImageGenerator import ImageGenerator
+import json
 import traceback
 
-IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
-DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db"
-BG_PATH = f'{IMG_PATH}/background.png'
-NONE_PATH = f'{IMG_PATH}/none.png'
-BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
+
+def get_path():
+    with open('assets/config/paths.json', encoding='utf-8') as fh:
+        json_txt = fh.read()
+        json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+        paths_list = json.loads(json_txt)
+        return paths_list
+
+
+paths_list = get_path()
+
+IMG_PATH = paths_list["ABS_PATH"] + paths_list["IMG_PATH"]
+DB_PATH = paths_list["ABS_PATH"] + paths_list["DB_PATH"]
+BG_PATH = paths_list["IMG_PATH"] + paths_list["BG_PATH"]
+NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
+BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
+TREASURE_BOX_PATH = paths_list["IMG_PATH"] + "treasure_box.png"
+SHOP_PATH = paths_list["IMG_PATH"] + "shop.png"
+WORD_PATH = paths_list["ABS_PATH"] + paths_list["WORD_PATH"]
+
 admin_list = [
     605188331642421272,
 ]
@@ -25,6 +44,12 @@ class command(commands.Cog):
         self.bot = bot
         self._last_result = None
         self.admin_list = admin_list
+
+        self.IMG_PATH = bot.paths_list["ABS_PATH"] + bot.paths_list["IMG_PATH"]
+        self.DB_PATH = bot.paths_list["ABS_PATH"] + bot.paths_list["DB_PATH"]
+        self.BG_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["BG_PATH"]
+        self.NONE_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["NONE_PATH"]
+        self.BG_TMP_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["BG_TMP_PATH"]
 
     def cog_unload(self):
         self.conn.close()
@@ -42,22 +67,24 @@ class command(commands.Cog):
     @commands.command(name='mine')
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def mine(self, ctx, direct=None):
-        Mine = mine.Mine(ctx=ctx)
-        user_id = ctx.author.id
-        fname = f"playing_{user_id}.png"
+        try:
+            Mine = mine.Mine(ctx=ctx)
+            user_id = ctx.author.id
+            fname = f"playing_{user_id}.png"
 
-        async with connect(DB_PATH) as conn:
-            async with conn.cursor() as cur:
-                depth, mine_text, layer = await Mine.player_mine(0, 1, conn, cur)
-                depth = (layer - 1) * 20 + depth[1]
-                text = f"{mine_text}\n\n現在深度{depth}"
+            async with connect(DB_PATH) as conn:
+                async with conn.cursor() as cur:
+                    depth, mine_text, layer = await Mine.player_mine(0, 1, conn, cur)
+                    depth = (layer - 1) * 20 + depth[1]
+                    text = f"{mine_text}\n\n現在深度{depth}"
 
-                embed = discord.Embed(description=text)
-                file = discord.File(fp=IMG_PATH + "/" + fname, spoiler=False)
-                embed.set_image(url=f"attachment://{fname}")
-                view = button.Confirm()
-                await ctx.send(file=file, embed=embed, view=view)
-
+                    embed = discord.Embed(description=text)
+                    file = discord.File(fp=IMG_PATH + "/" + fname, spoiler=False)
+                    embed.set_image(url=f"attachment://{fname}")
+                    view = button.Confirm()
+                    await ctx.send(file=file, embed=embed, view=view)
+        except:
+            print(traceback.format_exc())
 
     @commands.command(name='tp')
     @commands.cooldown(1, 8, type=commands.BucketType.user)
@@ -137,6 +164,58 @@ class command(commands.Cog):
                          icon_url=self.bot.user.avatar_url
                          )
         await ctx.send("status一覧")
+
+    @commands.command(name='toeic', aliases=["t"])
+    @commands.cooldown(1, 8, type=commands.BucketType.user)
+    async def toeic(self, ctx):
+        try:
+            en_dic = {}
+            with open(WORD_PATH) as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    row = row[0].split(',')
+                    en_dic[row[0]] = row[1]
+                while True:
+                    question = random.choice(list(en_dic.keys()))
+                    answer = en_dic[question]
+                    not_answer1 = en_dic[random.choice(list(en_dic.keys()))]
+                    not_answer2 = en_dic[random.choice(list(en_dic.keys()))]
+                    ans_list = [answer, not_answer1, not_answer2]
+                    random.shuffle(ans_list)
+                    embed = discord.Embed(
+                        description=f"**{question}**\n\n正しい意味はどれ？\n\n1⃣{ans_list[0]}\n2⃣{ans_list[1]}\n3⃣{ans_list[2]}"
+                    )
+                    embed_t = discord.Embed(
+                        description=f"**{question}**\n\n正解！\n\n**{answer}**"
+                    )
+                    embed_f = discord.Embed(
+                        description=f"**{question}**\n\nはずれ！\n\n正解は**{answer}**"
+                    )
+                    msg = await ctx.send(embed=embed)
+                    try:
+                        msg_react = await self.bot.wait_for('message', check=lambda
+                            m: m.author == ctx.author, timeout=30)
+                        if msg_react.content == "1":
+                            if ans_list[0] == answer:
+                                await msg.edit(embed=embed_t)
+                                continue
+                            await msg.edit(embed=embed_f)
+                        elif msg_react.content == "2":
+                            if ans_list[1] == answer:
+                                await msg.edit(embed=embed_t)
+                                continue
+                            await msg.edit(embed=embed_f)
+                        elif msg_react.content == "3":
+                            if ans_list[2] == answer:
+                                await msg.edit(embed=embed_t)
+                                continue
+                            await msg.edit(embed=embed_f)
+                        elif msg_react.content in ["stop", "0"]:
+                            return await msg.edit(content="‌", embed=discord.Embed(title=f"おつかれさまです"))
+                    except asyncio.TimeoutError:
+                        return await msg.edit(content="‌", embed=discord.Embed(title=f"時間切れです...\n正解は{answer}"))
+        except:
+            print(traceback.format_exc())
 
 
 async def get_player_items(self, user_id, conn, cur):

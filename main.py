@@ -3,8 +3,7 @@ from discord.ext import commands
 import asyncio
 import json
 import os
-
-path_list = ['assets/db', 'assets/img', 'assets/config', 'assets/item', 'assets/monster']
+dire_list = ['assets/db', 'assets/img', 'assets/config', 'assets/item', 'assets/monster']
 paths = {}
 
 
@@ -17,15 +16,20 @@ def get_paths(path):
         image_paths[name] = os.path.join(dir, filename)
     return image_paths
 
-
-for i in path_list:
+for i in dire_list:
     paths[os.path.basename(i)] = get_paths(i)
+
 
 with open(paths["config"]["setting"], encoding='utf-8') as fh:
     json_txt = fh.read()
     json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
     token = json.loads(json_txt)['token']
     prefix = json.loads(json_txt)['prefix']
+
+with open(paths["config"]["paths"], encoding='utf-8') as fh:
+    json_txt = fh.read()
+    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+    paths_list = json.loads(json_txt)
 
 with open(paths["item"]["items"], encoding='utf-8') as fh:
     json_txt = fh.read()
@@ -43,13 +47,13 @@ class MyBot(commands.Bot):
         super().__init__(command_prefix=prefix, intents=intents)
         self.sqlite_list = kwargs.pop("sqlite_list")
         self.item_list = kwargs.pop("item_list")
-        self.paths = kwargs.pop("paths")
+        self.paths_list = kwargs.pop("paths_list")
 
     def remove_from_list(self, u_id):
         [self.sqlite_list.remove(m) for m in self.sqlite_list if u_id == m[0]]
 
 
-bot = MyBot(sqlite_list=sqlite_list, item_list=item_list, paths=paths)
+bot = MyBot(sqlite_list=sqlite_list, item_list=item_list, paths_list=paths_list)
 
 
 @bot.event

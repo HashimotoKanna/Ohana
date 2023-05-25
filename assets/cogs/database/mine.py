@@ -1,5 +1,6 @@
 from PIL import Image
 import io
+import json
 import requests
 import random
 from .player import Player
@@ -7,20 +8,29 @@ from .treasure import Treasure
 from .shop import Shop
 from .ImageGenerator import ImageGenerator
 
-IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
-DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db"
-BG_0_PATH = f'{IMG_PATH}/background_0.png'
-BG_1_PATH = f'{IMG_PATH}/background_1.png'
-NONE_PATH = f'{IMG_PATH}/none.png'
-BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
-TREASUREBOX_PATH = f'{IMG_PATH}/treasure_box.png'
 
+def get_path():
+    with open('assets/config/paths.json', encoding='utf-8') as fh:
+        json_txt = fh.read()
+        json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+        paths_list = json.loads(json_txt)
+        return paths_list
+
+
+paths_list = get_path()
+
+IMG_PATH = paths_list["ABS_PATH"] + paths_list["IMG_PATH"]
+DB_PATH = paths_list["ABS_PATH"] + paths_list["DB_PATH"]
+BG_PATH = paths_list["IMG_PATH"] + paths_list["BG_PATH"]
+NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
+BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
+TREASURE_BOX_PATH = paths_list["IMG_PATH"] + "treasure_box.png"
 
 class Mine(Player):
     def __init__(self, ctx=None, interaction=None):
         super().__init__(ctx, interaction)
         self.none_img = Image.open(NONE_PATH)
-        self.treasure_box_img = Image.open(TREASUREBOX_PATH)
+        self.treasure_box_img = Image.open(TREASURE_BOX_PATH)
 
     async def player_mine(self, m_x: int, m_y: int, conn, cur):
         treasure = Treasure(ctx=self.ctx, interaction=self.interaction)

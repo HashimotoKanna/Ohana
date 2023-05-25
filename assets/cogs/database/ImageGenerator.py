@@ -6,22 +6,33 @@ from .shop import Shop
 from .player import Player
 from typing import List, Tuple
 import traceback
+import json
+def get_path():
+    with open('assets/config/paths.json', encoding='utf-8') as fh:
+        json_txt = fh.read()
+        json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
+        paths_list = json.loads(json_txt)
+        return paths_list
 
-IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
-DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db"
-BG_0_PATH = f'{IMG_PATH}/background_0.png'
-BG_1_PATH = f'{IMG_PATH}/background_1.png'
-NONE_PATH = f'{IMG_PATH}/none.png'
-SHOP_PATH = f'{IMG_PATH}/shop.png'
-BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
-TREASUREBOX_PATH = f'{IMG_PATH}/treasure_box.png'
+
+paths_list = get_path()
+
+IMG_PATH = paths_list["ABS_PATH"] + paths_list["IMG_PATH"]
+DB_PATH = paths_list["ABS_PATH"] + paths_list["DB_PATH"]
+BG_PATH = paths_list["IMG_PATH"] + paths_list["BG_PATH"]
+BG_0_PATH = paths_list["IMG_PATH"] + paths_list["BG_0_PATH"]
+BG_1_PATH = paths_list["IMG_PATH"] + paths_list["BG_1_PATH"]
+NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
+BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
+TREASURE_BOX_PATH = paths_list["IMG_PATH"] + paths_list["TREASURE_BOX_PATH"]
+SHOP_PATH = paths_list["IMG_PATH"] + paths_list["SHOP_PATH"]
 
 
 class ImageGenerator(Player):
     def __init__(self, ctx=None, interaction=None):
         super().__init__(ctx, interaction)
         self.none_img = Image.open(NONE_PATH)
-        self.treasure_box_img = Image.open(TREASUREBOX_PATH)
+        self.treasure_box_img = Image.open(TREASURE_BOX_PATH)
 
     async def make_terrain(self, player_pos: Tuple, mines_pos: List[Tuple[int, int]], layer: int) -> None:
         try:
@@ -29,7 +40,7 @@ class ImageGenerator(Player):
             none_img = Image.open(NONE_PATH)
             shop_img = Image.open(SHOP_PATH).resize((40, 40))
             player_img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content)).resize((34, 34))
-            treasure_img = Image.open(TREASUREBOX_PATH).resize((40, 40))
+            treasure_img = Image.open(TREASURE_BOX_PATH).resize((40, 40))
             background_img = change_background(layer)
 
             treasure = Treasure(ctx=self.ctx, interaction=self.interaction)

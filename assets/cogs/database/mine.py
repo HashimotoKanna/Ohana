@@ -3,7 +3,9 @@ import io
 import json
 import requests
 import random
+from .monster import Monster
 from .player import Player
+from .battle import Battle
 from .treasure import Treasure
 from .shop import Shop
 from .ImageGenerator import ImageGenerator
@@ -34,10 +36,12 @@ class Mine(Player):
 
     async def player_mine(self, m_x: int, m_y: int, conn, cur):
         treasure = Treasure(ctx=self.ctx, interaction=self.interaction)
+        monster = Monster(ctx=self.ctx, interaction=self.interaction)
         shop = Shop(ctx=self.ctx, interaction=self.interaction)
 
         x, y, layer = await self.get_player_position(conn, cur)
         treasure_pos = await treasure.get_treasure_point(layer)
+        monster_pos = await monster.get_monster_point(layer)
         shop_pos = await shop.get_shop_point(layer)
         terrain = ImageGenerator(ctx=self.ctx, interaction=self.interaction)
         if m_x + x >= 20:

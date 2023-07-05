@@ -53,7 +53,7 @@ class ImageGenerator(Player):
             background_img = self.conversion_pos(background_img, treasure_img, await treasure.get_treasure_point(layer), center=False) #宝のある場所に画像をはる
             background_img = self.conversion_pos(background_img, shop_img, await shop.get_shop_point(layer), center=False) #店のある場所に画像をはる
             background_img = self.conversion_pos(background_img, player_img, [player_pos], center=True)#プレイヤーの画像をはる
-            background_img = self.conversion_pos(background_img, monster_img, await monster.get_monster_point(layer), center=True)#monsterの画像をはる
+            background_img = self.conversion_pos(background_img, monster_img, await monster.get_monster_point(layer), center=False)#monsterの画像をはる
             
             background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
         except:

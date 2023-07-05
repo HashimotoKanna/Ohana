@@ -2,7 +2,7 @@ import random
 import asyncio
 from aiosqlite import connect
 import json
-
+import discord
 
 def get_path():
     with open('assets/config/paths.json', encoding='utf-8') as fh:
@@ -21,14 +21,22 @@ NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
 BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
 TREASURE_BOX_PATH = paths_list["IMG_PATH"] + "treasure_box.png"
 SHOP_PATH = paths_list["IMG_PATH"] + "shop.png"
+INSHOP_PATH = paths_list["IMG_PATH"] + "inside_of_shop.png"
 
 
 class Shop:
     def __init__(self, ctx=None, interaction=None):
         self.ctx = ctx
         self.interaction = interaction
+        self.ctxInt = ctx if ctx else interaction
         self.user = self.ctx.author if self.ctx else self.interaction.user
         self.user_id = self.user.id
+        
+    async def shop(self):
+        embed = discord.Embed(description="いらっしゃーい")
+        file = discord.File(fp=INSHOP_PATH, spoiler=False)
+        embed.set_image(url=f"attachment://inside_of_shop.png")
+        msg = await self.ctxInt.send(file=file, embed=embed)
 
     async def buy(self):
         pass

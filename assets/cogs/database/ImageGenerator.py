@@ -4,6 +4,7 @@ import requests
 from .treasure import Treasure
 from .shop import Shop
 from .player import Player
+from .monster import Monster
 from typing import List, Tuple
 import traceback
 import json
@@ -26,7 +27,7 @@ NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
 BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
 TREASURE_BOX_PATH = paths_list["IMG_PATH"] + paths_list["TREASURE_BOX_PATH"]
 SHOP_PATH = paths_list["IMG_PATH"] + paths_list["SHOP_PATH"]
-
+AKUMA_PATH = paths_list["IMG_PATH"] + paths_list["AKUMA_PATH"]
 
 class ImageGenerator(Player):
     def __init__(self, ctx=None, interaction=None):
@@ -42,15 +43,18 @@ class ImageGenerator(Player):
             player_img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content)).resize((34, 34))
             treasure_img = Image.open(TREASURE_BOX_PATH).resize((40, 40))
             background_img = change_background(layer)
+            monster_img = Image.open(AKUMA_PATH).resize((40, 40))
 
             treasure = Treasure(ctx=self.ctx, interaction=self.interaction)
             shop = Shop(ctx=self.ctx, interaction=self.interaction)
+            monster = Monster(ctx=self.ctx, interaction=self.interaction)
 
-            background_img = self.conversion_pos(background_img, none_img, mines_pos, center=True)
-            background_img = self.conversion_pos(background_img, treasure_img, await treasure.get_treasure_point(layer), center=False)
-            background_img = self.conversion_pos(background_img, shop_img, await shop.get_shop_point(layer), center=False)
-            background_img = self.conversion_pos(background_img, player_img, [player_pos], center=True)
-
+            background_img = self.conversion_pos(background_img, none_img, mines_pos, center=True) #掘ったところの画像をはる
+            background_img = self.conversion_pos(background_img, treasure_img, await treasure.get_treasure_point(layer), center=False) #宝のある場所に画像をはる
+            background_img = self.conversion_pos(background_img, shop_img, await shop.get_shop_point(layer), center=False) #店のある場所に画像をはる
+            background_img = self.conversion_pos(background_img, player_img, [player_pos], center=True)#プレイヤーの画像をはる
+            background_img = self.conversion_pos(background_img, monster_img, await monster.get_monster_point(layer), center=True)#monsterの画像をはる
+            
             background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
         except:
             print("エラー情報\n" + traceback.format_exc())

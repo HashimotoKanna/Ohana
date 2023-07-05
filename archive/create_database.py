@@ -1,9 +1,9 @@
 import os
 from aiosqlite import connect
 import asyncio
-
-IMG_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/img"
-DB_PATH = "C:/Users/it0_s/PycharmProjects/MinerGame-master/MinerGame-master/assets/db/mine.db"
+ABS_PATH =  "/home/souryo1010/discordbot/Ohana/"
+IMG_PATH = ABS_PATH + "assets/img"
+DB_PATH = ABS_PATH + "assets/db/mine.db"
 BG_PATH = f'{IMG_PATH}/background.png'
 NONE_PATH = f'{IMG_PATH}/none.png'
 BG_TMP_PATH = f'{IMG_PATH}/background_tmp.png'
@@ -36,7 +36,11 @@ async def create_database():
             # テーブル名:『treasure』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
             await cur.execute("CREATE TABLE IF NOT EXISTS treasure(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()
-
+            
+            # テーブル名:『monster』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+            await cur.execute("CREATE TABLE IF NOT EXISTS monster(user_id BIGINT(20), x INT, y INT, layer INT)")
+            await conn.commit()
+            
             # テーブル名:『warp_point』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
             await cur.execute("CREATE TABLE IF NOT EXISTS warp_point(user_id BIGINT(20), x INT, y INT, layer INT)")
             await conn.commit()

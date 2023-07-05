@@ -13,7 +13,7 @@ from .database.player import Player
 from .database.ImageGenerator import ImageGenerator
 import json
 import traceback
-
+"./../../main.py"
 
 def get_path():
     with open('assets/config/paths.json', encoding='utf-8') as fh:
@@ -45,11 +45,11 @@ class command(commands.Cog):
         self._last_result = None
         self.admin_list = admin_list
 
-        self.IMG_PATH = bot.paths_list["ABS_PATH"] + bot.paths_list["IMG_PATH"]
-        self.DB_PATH = bot.paths_list["ABS_PATH"] + bot.paths_list["DB_PATH"]
-        self.BG_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["BG_PATH"]
-        self.NONE_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["NONE_PATH"]
-        self.BG_TMP_PATH = bot.paths_list["IMG_PATH"] + bot.paths_list["BG_TMP_PATH"]
+        self.IMG_PATH = IMG_PATH
+        self.DB_PATH = DB_PATH
+        self.BG_PATH = BG_PATH
+        self.NONE_PATH = NONE_PATH
+        self.BG_TMP_PATH = BG_TMP_PATH
 
     def cog_unload(self):
         self.conn.close()
@@ -167,14 +167,40 @@ class command(commands.Cog):
 
     @commands.command(name='toeic', aliases=["t"])
     @commands.cooldown(1, 8, type=commands.BucketType.user)
-    async def toeic(self, ctx):
+    async def toeic(self, ctx, check=None):
         try:
             en_dic = {}
-            with open(WORD_PATH) as f:
+            with open(WORD_PATH, encoding="shift-jis") as f:
                 reader = csv.reader(f)
                 for row in reader:
                     row = row[0].split(',')
                     en_dic[row[0]] = row[1]
+                
+                if check:
+                    if check in en_dic.keys():
+                        return await ctx.send(check + ":" + en_dic[check])
+                    else:
+                        msg = await ctx.send(f"{check}は登録されていません。\n登録しますか？[y/n]")
+                        try:
+                            msg_react = await self.bot.wait_for('message', check=lambda
+                                m: m.author == ctx.author, timeout=30)
+                            if msg_react.content == "y":
+                                await msg.edit("英単語:")
+                                try:
+                                    msg_react = await self.bot.wait_for('message', check=lambda
+                                    m: m.author == ctx.author, timeout=30)
+                                    
+                                except asyncio.TimeoutError:
+                                    return await msg.edit(content="timeout")
+                                    await msg.edit(embed=embed_t)
+                                await msg.edit(embed=embed_f)
+                            elif msg_react.content == "n":
+                                if ans_list[0] == answer:
+                                    await msg.edit(embed=embed_t)
+                                await msg.edit(embed=embed_f)
+                        except asyncio.TimeoutError:
+                            return await msg.edit(content="timeout")
+                        
                 while True:
                     question = random.choice(list(en_dic.keys()))
                     answer = en_dic[question]
@@ -183,7 +209,7 @@ class command(commands.Cog):
                     ans_list = [answer, not_answer1, not_answer2]
                     random.shuffle(ans_list)
                     embed = discord.Embed(
-                        description=f"**{question}**\n\n正しい意味はどれ？\n\n1⃣{ans_list[0]}\n2⃣{ans_list[1]}\n3⃣{ans_list[2]}"
+                        description=f"**{question}**\n\n正しい意味はどれ？\n\n1⃣{ans_list[0]}\n2⃣{ans_list[1]}\n3⃣{ans_list[2]}\n\n`stop` or `0`で終了"
                     )
                     embed_t = discord.Embed(
                         description=f"**{question}**\n\n正解！\n\n**{answer}**"

@@ -9,5 +9,6 @@
   "NONE_PATH": "none.png",
   "TREASURE_BOX_PATH": "treasure_box.png",
   "SHOP_PATH": "shop.png",
-  "WORD_PATH": "assets/toeic/word.csv"
+  "WORD_PATH": "assets/toeic/word.csv",
+  "AKUMA_PATH":"akuma.png"
 }

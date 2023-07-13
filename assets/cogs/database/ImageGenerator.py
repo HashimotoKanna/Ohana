@@ -7,43 +7,28 @@ from .player import Player
 from .monster import Monster
 from typing import List, Tuple
 import traceback
-import json
-def get_path():
-    with open('assets/config/paths.json', encoding='utf-8') as fh:
-        json_txt = fh.read()
-        json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
-        paths_list = json.loads(json_txt)
-        return paths_list
-
-
-paths_list = get_path()
-
-IMG_PATH = paths_list["ABS_PATH"] + paths_list["IMG_PATH"]
-DB_PATH = paths_list["ABS_PATH"] + paths_list["DB_PATH"]
-BG_PATH = paths_list["IMG_PATH"] + paths_list["BG_PATH"]
-BG_0_PATH = paths_list["IMG_PATH"] + paths_list["BG_0_PATH"]
-BG_1_PATH = paths_list["IMG_PATH"] + paths_list["BG_1_PATH"]
-NONE_PATH = paths_list["IMG_PATH"] + paths_list["NONE_PATH"]
-BG_TMP_PATH = paths_list["IMG_PATH"] + paths_list["BG_TMP_PATH"]
-TREASURE_BOX_PATH = paths_list["IMG_PATH"] + paths_list["TREASURE_BOX_PATH"]
-SHOP_PATH = paths_list["IMG_PATH"] + paths_list["SHOP_PATH"]
-AKUMA_PATH = paths_list["IMG_PATH"] + paths_list["AKUMA_PATH"]
 
 class ImageGenerator(Player):
-    def __init__(self, ctx=None, interaction=None):
+    def __init__(self, ctx=None, interaction=None, config=None):
         super().__init__(ctx, interaction)
-        self.none_img = Image.open(NONE_PATH)
-        self.treasure_box_img = Image.open(TREASURE_BOX_PATH)
+        self.config = config
+
 
     async def make_terrain(self, player_pos: Tuple, mines_pos: List[Tuple[int, int]], layer: int) -> None:
         try:
+            
+            none_path = self.bot.config.get_none()
+            shop_path = self.bot.config.get_shop()
+            treasure_box_path = self.bot.config.get_treasure_box()
+            akuma_path = self.bot.config.get_akuma()
+            playing_path = self.bot.config.get_playing(self.user_id)
 
-            none_img = Image.open(NONE_PATH)
-            shop_img = Image.open(SHOP_PATH).resize((40, 40))
+            none_img = Image.open(none_path)
+            shop_img = Image.open(shop_path).resize((40, 40))
             player_img = Image.open(io.BytesIO(requests.get(self.user.display_avatar).content)).resize((34, 34))
-            treasure_img = Image.open(TREASURE_BOX_PATH).resize((40, 40))
-            background_img = change_background(layer)
-            monster_img = Image.open(AKUMA_PATH).resize((40, 40))
+            treasure_img = Image.open(treasure_box_path).resize((40, 40))
+            background_img = self.change_background(layer)
+            monster_img = Image.open(akuma_path).resize((40, 40))
 
             treasure = Treasure(ctx=self.ctx, interaction=self.interaction)
             shop = Shop(ctx=self.ctx, interaction=self.interaction)
@@ -55,7 +40,7 @@ class ImageGenerator(Player):
             background_img = self.conversion_pos(background_img, player_img, [player_pos], center=True)#プレイヤーの画像をはる
             background_img = self.conversion_pos(background_img, monster_img, await monster.get_monster_point(layer), center=False)#monsterの画像をはる
             
-            background_img.save(f'{IMG_PATH}' + f'/playing_{self.user_id}.png', quality=95)
+            background_img.save(playing_path, quality=95)
         except:
             print("エラー情報\n" + traceback.format_exc())
 
@@ -65,10 +50,11 @@ class ImageGenerator(Player):
                 background_img.paste(img, ((480 if center else 0) + x * 40, y * 40))
         return background_img
 
-
-def change_background(layer):
-    if layer == 1:
-        return Image.open(BG_0_PATH)
-    else:
-        background_img = Image.open(BG_1_PATH)
-    return background_img
+    def change_background(self, layer):
+        bg0_path = self.bot.config.get_bg(0)
+        bg1_path = self.bot.config.get_bg(1)
+        if layer == 1:
+            return Image.open(bg0_path)
+        else:
+            background_img = Image.open(bg1_path)
+        return background_img

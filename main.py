@@ -3,38 +3,11 @@ from discord.ext import commands
 import asyncio
 import json
 import os
-dire_list = ['assets/db', 'assets/img', 'assets/config', 'assets/item', 'assets/monster']
-paths = {}
+from assets.features.generals.path import ControlConfig
 
-
-def get_paths(path):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    dir = os.path.join(script_dir, path)
-    image_paths = {}
-    for filename in os.listdir(dir):
-        name, ext = os.path.splitext(filename)
-        image_paths[name] = os.path.join(dir, filename)
-    return image_paths
-
-for i in dire_list:
-    paths[os.path.basename(i)] = get_paths(i)
-
-
-with open(paths["config"]["setting"], encoding='utf-8') as fh:
-    json_txt = fh.read()
-    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
-    token = json.loads(json_txt)['token']
-    prefix = json.loads(json_txt)['prefix']
-
-with open(paths["config"]["paths"], encoding='utf-8') as fh:
-    json_txt = fh.read()
-    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
-    paths_list = json.loads(json_txt)
-
-with open(paths["item"]["items"], encoding='utf-8') as fh:
-    json_txt = fh.read()
-    json_txt = str(json_txt).replace("'", '"').replace('True', 'true').replace('False', 'false')
-    item_list = json.loads(json_txt)['items']
+config = ControlConfig()
+token = config.get_token()
+prefix = config.get_prefix()
 
 intents = discord.Intents.all()
 only_admin = []
@@ -46,19 +19,19 @@ class MyBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(command_prefix=prefix, intents=intents)
         self.sqlite_list = kwargs.pop("sqlite_list")
-        self.item_list = kwargs.pop("item_list")
-        self.paths_list = kwargs.pop("paths_list")
+        self.admin_list = kwargs.pop("admin_list")
+        self.config = kwargs.pop("config")
 
     def remove_from_list(self, u_id):
         [self.sqlite_list.remove(m) for m in self.sqlite_list if u_id == m[0]]
 
 
-bot = MyBot(sqlite_list=sqlite_list, item_list=item_list, paths_list=paths_list)
+bot = MyBot(sqlite_list=sqlite_list, admin_list=admin_list, config=config)
 
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user} has connected to Discord!')
+    print(f"{bot.user} has connected to Discord!")
     try:
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} command(s)")
@@ -76,9 +49,9 @@ async def on_command_error(ctx, err):
 
 
 async def load_cogs():
-    for file in os.listdir('assets/cogs/'):
-        if file.endswith('.py'):
-            await bot.load_extension(f'assets.cogs.{file[:-3]}')
+    for file in os.listdir("assets/cogs/"):
+        if file.endswith(".py"):
+            await bot.load_extension(f"assets.cogs.{file[:-3]}")
 
 
 asyncio.run(load_cogs())

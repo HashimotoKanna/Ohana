@@ -11,9 +11,9 @@ class Confirm(discord.ui.View):
 
     async def embed_response(self, interaction, x, y):
         user_id = interaction.user.id
-        mine = Mine(interaction=interaction)
-        db_path = self.bot.config.get_db()
-        playing_path = self.bot.config.get_playing(user_id)
+        mine = Mine(interaction=interaction, config=self.config)
+        db_path = self.config.get_db()
+        playing_path = self.config.get_playing(user_id)
         async with connect(db_path) as conn:
             async with conn.cursor() as cur:
                 depth, mine_text, layer = await mine.player_mine(x, y, conn, cur)
@@ -24,7 +24,7 @@ class Confirm(discord.ui.View):
                 file = discord.File(fp=playing_path, spoiler=False)
                 embed.set_image(url=f"attachment://{playing_path}")
                 await interaction.response.send_message(
-                    file=file, embed=embed, view=Confirm()
+                    file=file, embed=embed, view=Confirm(config=self.config)
                 )
 
     @discord.ui.button(label="\u200b", style=discord.ButtonStyle.grey, row=1)

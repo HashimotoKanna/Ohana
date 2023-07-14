@@ -12,11 +12,13 @@ class Mine(Player):
 
     async def player_mine(self, m_x: int, m_y: int, conn, cur):
         x, y, layer = await self.get_player_position(conn, cur)
-        terrain = ImageGenerator(ctx=self.ctx, interaction=self.interaction)
+        terrain = ImageGenerator(
+            ctx=self.ctx, interaction=self.interaction, config=self.config
+        )
         if m_x + x >= 20:
             return (x, y), "横にはこれ以上掘れないよ！", layer
-        x += m_x
 
+        x += m_x
         y, layer = is_change_layer(y, m_y, layer)
 
         mines = await self.get_player_mine(cur, layer)

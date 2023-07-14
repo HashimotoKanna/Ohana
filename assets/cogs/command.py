@@ -36,7 +36,7 @@ class command(commands.Cog):
     @commands.cooldown(1, 8, type=commands.BucketType.user)
     async def mine(self, ctx, direct=None):
         try:
-            Mine = mine.Mine(ctx=ctx)
+            Mine = mine.Mine(ctx=ctx, config=self.bot.config)
             user_id = ctx.author.id
             db_path = self.bot.config.get_db()
             playing_path = self.bot.config.get_playing(user_id)
@@ -50,7 +50,7 @@ class command(commands.Cog):
                     embed = discord.Embed(description=text)
                     file = discord.File(fp=playing_path, spoiler=False)
                     embed.set_image(url=f"attachment://{playing_path}")
-                    view = button.Confirm()
+                    view = button.Confirm(config=self.bot.config)
                     await ctx.send(file=file, embed=embed, view=view)
         except:
             print(traceback.format_exc())
@@ -64,9 +64,9 @@ class command(commands.Cog):
 
         async with connect(db_path) as conn:
             async with conn.cursor() as cur:
-                player = Player(ctx=ctx)
-                mine = Mine(ctx=ctx)
-                img = ImageGenerator(ctx=ctx)
+                player = Player(ctx=ctx, config=self.bot.config)
+                mine = Mine(ctx=ctx, config=self.bot.config)
+                img = ImageGenerator(ctx=ctx, config=self.bot.config)
                 warp_points = await player.get_player_warp_point(cur)
                 if x and y and layer and (int(x), int(y), int(layer)) in warp_points:
                     x, y, layer = int(x), int(y), int(layer)

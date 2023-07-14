@@ -11,7 +11,7 @@ class Monster:
         self.config = config
 
     async def get_monster_point(self, layer):
-        db_path = self.bot.config.get_db()
+        db_path = self.config.get_db()
         async with connect(db_path) as conn:
             async with conn.cursor() as cur:
                 await cur.execute(

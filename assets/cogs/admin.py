@@ -72,16 +72,18 @@ class admin(commands.Cog):
             return await ctx.send("指定ユーザーのみが使用できます")
 
         db_path = self.bot.config.get_db()
-        if os.path.exists(db_path):
-            return
-
-        open(db_path, "w").close()
         async with connect(db_path) as conn:
             async with conn.cursor() as cur:
                 await conn.commit()
-                # テーブル名:『player』
+                # テーブル名:『player』カラム名: ユーザーID 整数値, exp 整数値, 堀った数 整数値
                 await cur.execute(
-                    "CREATE TABLE IF NOT EXISTS player(user_id BIGINT(20), exp bigint(20), )"
+                    "CREATE TABLE IF NOT EXISTS player(user_id BIGINT(20), exp INT, mine_count INT)"
+                )
+                await conn.commit()
+
+                # テーブル名:『position』カラム名: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+                await cur.execute(
+                    "CREATE TABLE IF NOT EXISTS position(user_id BIGINT(20), x INT, y INT, layer INT)"
                 )
                 await conn.commit()
 
@@ -97,9 +99,33 @@ class admin(commands.Cog):
                 )
                 await conn.commit()
 
-                # テーブル名:『in_mine』
+                # テーブル名:『mine』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
                 await cur.execute(
-                    "CREATE TABLE IF NOT EXISTS mine(user_id BIGINT(20), depth INT, place INT,player_mine INT)"
+                    "CREATE TABLE IF NOT EXISTS mine(user_id BIGINT(20), x INT, y INT, layer INT)"
+                )
+                await conn.commit()
+
+                # テーブル名:『treasure』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+                await cur.execute(
+                    "CREATE TABLE IF NOT EXISTS treasure(user_id BIGINT(20), x INT, y INT, layer INT)"
+                )
+                await conn.commit()
+
+                # テーブル名:『monster』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+                await cur.execute(
+                    "CREATE TABLE IF NOT EXISTS monster(user_id BIGINT(20), x INT, y INT, layer INT)"
+                )
+                await conn.commit()
+
+                # テーブル名:『warp_point』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+                await cur.execute(
+                    "CREATE TABLE IF NOT EXISTS warp_point(user_id BIGINT(20), x INT, y INT, layer INT)"
+                )
+                await conn.commit()
+
+                # テーブル名:『shop』カラム内容: ユーザーID 整数値, x 整数値, y 整数値, layer 階層
+                await cur.execute(
+                    "CREATE TABLE IF NOT EXISTS shop(user_id BIGINT(20), x INT, y INT, layer INT)"
                 )
                 await conn.commit()
 

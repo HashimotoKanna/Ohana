@@ -11,7 +11,7 @@ class Treasure:
         self.config = config
 
     async def get_treasure_point(self, layer):
-        db_path = self.bot.config.get_db()
+        db_path = self.config.get_db()
         async with connect(db_path) as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
